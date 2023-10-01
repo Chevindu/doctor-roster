@@ -17,7 +17,7 @@ const EventContent: FC<EventContentProps> = ({ eventInfo, onRemove }) => {
             <div className="title">{eventInfo.event.title}</div>
             <div className="custom">{eventInfo.event.extendedProps.custom}</div>
 
-            {onRemove && <button className="remove" onClick={() => onRemove(eventInfo.event.id)}>🗙</button>}
+            {onRemove && <button className="remove" onClick={() => onRemove(eventInfo.event.id)}>X</button>}
         </div>
     )
 }

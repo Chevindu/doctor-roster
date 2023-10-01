@@ -5,29 +5,24 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { CalendarSourceEvent, TeamMemberType } from './interfaces'
-import EventStorage from './services/EventStorage'
+import AppStorage from './services/AppStorage'
 import EventContent from './components/EventContent/EventContent'
 import { EventChangeArg, EventContentArg } from '@fullcalendar/core/index.js'
-import interactionPlugin, { DateClickArg, Draggable, EventReceiveArg } from '@fullcalendar/interaction'
-import './App.css'
+import interactionPlugin, { Draggable, EventReceiveArg } from '@fullcalendar/interaction'
 import TeamMember from './components/TeamMember/TeamMember'
+import MemberForm from './components/MemberForm/MemberForm'
+import './App.css'
 
+const defaultFormValues = { id: "", title: "", description: "", color: "" };
 
 function App() {
 
   const calendarRef = createRef<FullCalendar>();
   const [hours, setHours] = useState(6);
   const [copyButtonText, setCopyButtonText] = useState('Copy Schedule');
-  const [externalEvents] = useState<TeamMemberType[]>([
-    { title: "Dr. Dinesh / Dr. Nirmala", color: "#0097a7", id: "0001", description: "Admin" },
-    { title: "Dr. Nadeera", color: "#f44336", id: "0002", description: "MO in-charge" },
-    { title: "Dr. Pradeep", color: "#f57f17", id: "0003" },
-    { title: "Dr. Ranindu", color: "#90a4ae", id: "0004" },
-    { title: "Dr. Geesara", color: "#4cbb00", id: "0005" },
-    { title: "Dr. Asitha", color: "#bb008c", id: "0006" },
-  ]);
-
-  const [calendarEvents, setCalendarEvents] = useState<CalendarSourceEvent[]>(EventStorage.getEvents());
+  const [formValues, setFormValues] = useState<TeamMemberType>(defaultFormValues);
+  const [externalEvents, setExternalEvents] = useState<TeamMemberType[]>(AppStorage.getMembers());
+  const [calendarEvents, setCalendarEvents] = useState<CalendarSourceEvent[]>(AppStorage.getEvents());
 
   useEffect(() => {
     const containerEl = document.getElementById("external-events");
@@ -54,13 +49,8 @@ function App() {
     }
   }, []);
 
-  const handleDateClick = (arg: DateClickArg) => {
-    console.log('Date click\n', arg)
-  }
-
   const handleEventChange = (arg: EventChangeArg) => {
     console.log('Event change\n', arg.event.toJSON())
-    console.log("=====  handleEventChange events:", calendarRef.current?.getApi()?.getEvents().map(event => event.toJSON()))
     const latestCalendarEvents = calendarRef.current?.getApi()?.getEvents().map(event => event.toJSON());
     if (latestCalendarEvents) {
       setEvents(latestCalendarEvents as any[]);
@@ -86,7 +76,7 @@ function App() {
   const setEvents = (newEvents: CalendarSourceEvent[]) => {
     setCalendarEvents(newEvents)
     const deduplicatedEvents = removeDuplicates(newEvents);
-    EventStorage.setEvents(deduplicatedEvents)
+    AppStorage.setEvents(deduplicatedEvents)
   }
 
   const removeEvent = (id: string) => {
@@ -144,6 +134,40 @@ function App() {
     copyToClipboard(stringify(sessionsByTitle))
   }
 
+  const dialogRef = createRef<HTMLDialogElement>();
+  const handleNewMemberClick = () => {
+    dialogRef.current?.showModal();
+  }
+
+  const setMembers = (newMembers: TeamMemberType[]) => {
+    setExternalEvents(newMembers)
+    AppStorage.setMembers(newMembers)
+  }
+
+  const handleNewMemberFormSubmit = (newValues: any) => {
+    dialogRef.current?.close();
+
+    if (newValues.title === "") {
+      return;
+    }
+
+    const newMember: TeamMemberType = { ...newValues, id: `${Date.now()}` }
+    if (newMember.color === "") {
+      newMember.color = "hsl(44, 100%, 56%)";
+    }
+
+    setMembers([...externalEvents, newMember])
+  }
+
+  const handleNewMemberClose = () => {
+    dialogRef.current?.close();
+  }
+
+  const handleRemoveMember = (member: TeamMemberType) => {
+    const currentMembers = externalEvents.filter(event => event.id !== member.id);
+    setMembers(currentMembers)
+  }
+
   return (
     <div className='app-container'>
       <div className='external-events' id='external-events'>
@@ -155,7 +179,13 @@ function App() {
 
         <div className="section team-section">
           <strong>Team</strong>
-          {externalEvents.map((event) => <TeamMember event={event} hours={hours} key={event.id} />)}
+          {externalEvents.map((event) => <TeamMember event={event} hours={hours} key={event.id} onRemove={handleRemoveMember} />)}
+
+          <dialog ref={dialogRef} onClose={handleNewMemberClose} className="add-member-dialog">
+            <button onClick={handleNewMemberClose} className="close-icon">X</button>
+            <MemberForm defaultFormValues={formValues} onSubmit={handleNewMemberFormSubmit} onCancel={handleNewMemberClose} />
+          </dialog>
+          <button onClick={handleNewMemberClick} className="action add-member">Add Member</button>
         </div>
 
         <button onClick={() => { setEvents([]) }} className="action clear-events">Clear Schedule</button>
@@ -177,7 +207,6 @@ function App() {
           }}
           initialView="timeGridWeek"
           events={calendarEvents}
-          dateClick={handleDateClick}
           eventChange={handleEventChange}
           eventReceive={handleEventReceive}
           eventContent={renderEventContent}
