@@ -1,12 +1,12 @@
 .member-form {
     padding: 30px 20px 20px;
-    label {
+
+    .form-label {
         width: 100%;
         display: flex;
         margin-bottom: 20px;
 
-        input,
-        textarea {
+        .form-item {
             flex: 1;
             margin-left: 20px;
         }

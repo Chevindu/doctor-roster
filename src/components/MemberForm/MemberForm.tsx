@@ -36,11 +36,11 @@ const MemberForm: FC<MemberFormProps> = ({ defaultFormValues, onChange, onSubmit
 
     return <form onSubmit={handleNewMemberFormSubmit} name="addMemberForm" className="member-form">
 
-        <label htmlFor="title">Name:<input type="text" id="title" required={true} value={formValues.title} onChange={(e) => handleFieldChange("title", e)} /></label>
+        <label className="form-label" htmlFor="title">Name:<input type="text" className="form-item" id="title" required={true} value={formValues.title} onChange={(e) => handleFieldChange("title", e)} /></label>
 
-        <label htmlFor="description">Description:<textarea id="description" value={formValues.description} onChange={(e) => handleFieldChange("description", e)} /></label>
+        <label className="form-label" htmlFor="description">Description:<textarea className="form-item" id="description" value={formValues.description} onChange={(e) => handleFieldChange("description", e)} /></label>
 
-        <label htmlFor="color">Color:<input type="color" id="color" value={formValues.color} onChange={(e) => handleFieldChange("color", e)} /></label>
+        <label className="form-label" htmlFor="color">Color:<input type="color" className="form-item" id="color" value={formValues.color} onChange={(e) => handleFieldChange("color", e)} /></label>
 
         <div className="action-container">
             <button value="add" type="submit" className="action primary-action">Add</button>

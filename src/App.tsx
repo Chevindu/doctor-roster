@@ -20,7 +20,7 @@ function App() {
   const calendarRef = createRef<FullCalendar>();
   const [hours, setHours] = useState(6);
   const [copyButtonText, setCopyButtonText] = useState('Copy Schedule');
-  const [formValues, setFormValues] = useState<TeamMemberType>(defaultFormValues);
+  const [formValues] = useState<TeamMemberType>(defaultFormValues);
   const [externalEvents, setExternalEvents] = useState<TeamMemberType[]>(AppStorage.getMembers());
   const [calendarEvents, setCalendarEvents] = useState<CalendarSourceEvent[]>(AppStorage.getEvents());
 
