@@ -128,10 +128,33 @@ function App() {
     for (const title in eventsByTitle) {
       sessionsByTitle[title] = eventsByTitle[title]
         .sort((a, b) => new Date(a.start!).getTime() - new Date(b.start!).getTime())
-        .map(event => `${getFormattedDateTime(event.start)} - ${getFormattedDateTime(event.end)}`)
+        .map(event => getFormattedDateTime(event.start))
     }
+    console.log("sessionsByTitle:", sessionsByTitle);
 
-    copyToClipboard(stringify(sessionsByTitle))
+    const shiftsByTitle: { [title: string]: string[] } = {};
+    for (const title in sessionsByTitle) {
+      const sessions = sessionsByTitle[title];
+      const mapForDate = new Map<string, string>();
+
+      for (const session of sessions) {
+        const sessionDate = session.split(") ")[0] + ")"
+        const sessionShift = session.split(") ")[1];
+
+        if (mapForDate.has(sessionDate)) {
+          const currentShifts = mapForDate.get(sessionDate);
+          mapForDate.set(sessionDate, `${currentShifts} + ${sessionShift}`);
+        } else {
+          mapForDate.set(sessionDate, sessionShift);
+        }
+      }
+
+      const shifts = Array.from(mapForDate).map(entry => `${entry[0]} → ${entry[1]}`);
+      shiftsByTitle[title] = shifts;
+    }
+    console.log("shiftsByTitle:", shiftsByTitle);
+
+    copyToClipboard(stringify(shiftsByTitle))
   }
 
   const dialogRef = createRef<HTMLDialogElement>();
@@ -174,7 +197,14 @@ function App() {
         <div className="section hours-section">
           <strong>Shift (hours)</strong>
           <div>{hours}</div>
-          <input type="range" min={4} max={16} value={hours} onChange={(e) => setHours(Number(e.target.value))} />
+          <input type="range" list="ticks" min={0} max={24} value={hours} onChange={(e) => setHours(Number(e.target.value))} step={6} />
+          <datalist id="ticks">
+            <option value="0"></option>
+            <option value="6"></option>
+            <option value="12"></option>
+            <option value="18"></option>
+            <option value="24"></option>
+          </datalist>
         </div>
 
         <div className="section team-section">
