@@ -241,9 +241,9 @@ function App() {
           eventReceive={handleEventReceive}
           eventContent={renderEventContent}
           slotDuration={{ hours: 0.5 }}
-          scrollTime="08:00:00"
+          scrollTime="07:00:00"
           scrollTimeReset={false}
-          slotLabelInterval={{ hours: 2 }}
+          slotLabelInterval={{ hours: 1 }}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         />
       </div>
